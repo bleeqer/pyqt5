@@ -235,10 +235,13 @@ class Ui_MainWindow(object):
         self.CS3.setObjectName("cs3")
         self.gridLayout.addWidget(self.CS3, 10, 4, 1, 1)
         self.CS3.clicked.connect(lambda: self.matching("CS3"))
+        
         self.CS4 = QtWidgets.QPushButton(self.gridLayoutWidget)
         self.CS4.setObjectName("cs4")
         self.gridLayout.addWidget(self.CS4, 10, 5, 1, 1)
         self.CS4.clicked.connect(lambda: self.matching("CS4"))
+        
+        
         self.SB2 = QtWidgets.QPushButton(self.gridLayoutWidget)
         self.SB2.setObjectName("sb2")
         self.gridLayout.addWidget(self.SB2, 10, 7, 1, 1)
@@ -402,7 +405,7 @@ class Ui_MainWindow(object):
         self.editLabel.setText(_translate("MainWindow", "내용 편집"))
         self.completeEdit.setText(_translate("MainWindow", "편집 완료"))
         self.save.setText(_translate("MainWindow", "저장하기"))
-        self.versionManage.setText(_translate("MainWindow", "Verson 1.0.0"))
+        self.versionManage.setText(_translate("MainWindow", "Verson 1.0.1")) # 매칭-딜리트-편집완료시 인덱스 바뀌는현상수정
         self.deleting.setShortcut(_translate("MainWindow", "Del"))
 
 
@@ -451,7 +454,6 @@ class Ui_MainWindow(object):
         elif int(self.year) == 0:
             self.show_popup("오류", "날짜를 먼저 설정 해주세요.")
             self.detailEdit.clear()
-        
         self.matching_sig = 1
 
 
@@ -468,6 +470,7 @@ class Ui_MainWindow(object):
             self.reportList.setFocus()
         elif self.matching_sig == False:
             self.show_popup('오류', '설비를 선택 해주세요.')
+        print(self.matched)
         
 
     def show_popup(self, title, message):
@@ -481,21 +484,24 @@ class Ui_MainWindow(object):
 
     
     def adding_details(self):
+
         self.idx = self.reportList.currentRow()
         self.matched[self.machineName][-1].append(self.reversedRecords[self.idx][1])
         self.reportList.takeItem(self.idx)
         self.reversedRecords.pop(self.idx)
     
+    
     def deleting_details(self):
-        self.idx = self.reportList.currentRow()
-        self.reportList.takeItem(self.idx)
-        self.reversedRecords.pop(self.idx)
+        self.reportList.takeItem(self.reportList.currentRow())
+        self.reversedRecords.pop(self.reportList.currentRow())
         
 
     def display_editing(self, old, new):
+        print(old, new)
         oldText = self.detailEdit.text()
         self.editingLabel.setText(oldText[new:])
         self.editedRec = oldText[new:]
+        print(self.editedRec)
     
 
 
@@ -512,6 +518,9 @@ class Ui_MainWindow(object):
 
     def writing_in(self):
 
+        for machine in self.matched:
+            self.matched[machine].sort()
+        
         for workbook in self.workbookList:
             
             wb = load_workbook(workbook)
@@ -574,7 +583,6 @@ if __name__ == "__main__":
     MainWindow = QtWidgets.QMainWindow()
     ui = Ui_MainWindow()
     ui.setupUi(MainWindow)
-
     ui.inserting_records(records)
     MainWindow.show()
     sys.exit(app.exec_())
