@@ -470,7 +470,6 @@ class Ui_MainWindow(object):
             self.reportList.setFocus()
         elif self.matching_sig == False:
             self.show_popup('오류', '설비를 선택 해주세요.')
-        print(self.matched)
         
 
     def show_popup(self, title, message):
@@ -497,11 +496,9 @@ class Ui_MainWindow(object):
         
 
     def display_editing(self, old, new):
-        print(old, new)
         oldText = self.detailEdit.text()
         self.editingLabel.setText(oldText[new:])
         self.editedRec = oldText[new:]
-        print(self.editedRec)
     
 
 
