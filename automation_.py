@@ -405,33 +405,9 @@ class Ui_MainWindow(object):
         self.editLabel.setText(_translate("MainWindow", "내용 편집"))
         self.completeEdit.setText(_translate("MainWindow", "편집 완료"))
         self.save.setText(_translate("MainWindow", "저장하기"))
-        self.versionManage.setText(_translate("MainWindow", "Verson 1.0.1")) # 매칭-딜리트-편집완료시 인덱스 바뀌는현상수정
+        self.versionManage.setText(_translate("MainWindow", "Verson 1.0.1")) # 매칭-딜리트-편집완료시 인덱스 바뀌는현상, 날짜 순서대로 정렬되게끔 수정
         self.deleting.setShortcut(_translate("MainWindow", "Del"))
 
-
-    def importing_recrods(self, workbook):
-        wb = load_workbook(workbook)
-        sheetNames = wb.sheetnames[:]
-        removeList = []
-        records = []
-        for id in range(len(sheetNames)):
-	        if len(str(sheetNames[id])) > 2:
-		        removeList.append(sheetNames[id])
-
-        for sheet in removeList:
-            sheetNames.remove(sheet)
-
-        for sheetName in sheetNames:
-            ws = wb.get_sheet_by_name(sheetName)
-
-            for i in range(0, 6):
-                val = ws.cell(36-i, 2).value
-                if val == None:
-                    continue
-                data = ["{}".format(sheetName), val[3:]]
-                records.append(data)
-        return records
-    
 
     def inserting_records(self, records):
 
@@ -442,6 +418,7 @@ class Ui_MainWindow(object):
     def get_year_month(self):
         self.year = self.yearCombo.currentText()
         self.month = self.monthCombo.currentText()
+        self.show_popup("입력 완료", "날짜 입력 완료")
 
     def matching(self, machineName):
 
@@ -479,8 +456,10 @@ class Ui_MainWindow(object):
         msg.setIcon(QtWidgets.QMessageBox.Warning)
         if title == "저장 완료":
             msg.setIcon(QtWidgets.QMessageBox.Information)
+        if title == '입력 완료':
+            msg.setIcon(QtWidgets.QMessageBox.Information)
         msg.exec_()
-
+        
     
     def adding_details(self):
 
