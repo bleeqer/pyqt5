@@ -74,6 +74,7 @@ class Ui_MainWindow(object):
         self.adding.setObjectName("Adding")
         self.gridLayout.addWidget(self.adding, 11, 7, 1, 1)
         self.adding.clicked.connect(self.adding_details)
+        
         self.deleting = QtWidgets.QPushButton(self.gridLayoutWidget)
         self.deleting.setAutoFillBackground(False)
         self.deleting.setObjectName("Deleting")
@@ -209,15 +210,15 @@ class Ui_MainWindow(object):
         self.HP208.clicked.connect(lambda: self.matching("HP208"))
         self.SB1 = QtWidgets.QPushButton(self.gridLayoutWidget)
         self.SB1.setObjectName("sb1")
-        self.gridLayout.addWidget(self.SB1, 10, 6, 1, 1)
+        self.gridLayout.addWidget(self.SB1, 10, 7, 1, 1)
         self.SB1.clicked.connect(lambda: self.matching("SB1"))
         self.SB3 = QtWidgets.QPushButton(self.gridLayoutWidget)
         self.SB3.setObjectName("sb3")
-        self.gridLayout.addWidget(self.SB3, 11, 2, 1, 1)
+        self.gridLayout.addWidget(self.SB3, 11, 3, 1, 1)
         self.SB3.clicked.connect(lambda: self.matching("SB3"))
         self.HT1 = QtWidgets.QPushButton(self.gridLayoutWidget)
         self.HT1.setObjectName("HT1")
-        self.gridLayout.addWidget(self.HT1, 11, 3, 1, 1)
+        self.gridLayout.addWidget(self.HT1, 11, 4, 1, 1)
         self.HT1.clicked.connect(lambda: self.matching("HT1"))
         self.HP209 = QtWidgets.QPushButton(self.gridLayoutWidget)
         self.HP209.setObjectName("HP209")
@@ -241,20 +242,24 @@ class Ui_MainWindow(object):
         self.gridLayout.addWidget(self.CS4, 10, 5, 1, 1)
         self.CS4.clicked.connect(lambda: self.matching("CS4"))
         
+        self.CS5 = QtWidgets.QPushButton(self.gridLayoutWidget)
+        self.CS5.setObjectName("cs5")
+        self.gridLayout.addWidget(self.CS5, 10, 6, 1, 1)
+        self.CS5.clicked.connect(lambda: self.matching("CS5")) 
         
         self.SB2 = QtWidgets.QPushButton(self.gridLayoutWidget)
         self.SB2.setObjectName("sb2")
-        self.gridLayout.addWidget(self.SB2, 10, 7, 1, 1)
+        self.gridLayout.addWidget(self.SB2, 11, 2, 1, 1)
         self.SB2.clicked.connect(lambda: self.matching("SB2"))
 
         self.HT2 = QtWidgets.QPushButton(self.gridLayoutWidget)
         self.HT2.setObjectName("ht2")
-        self.gridLayout.addWidget(self.HT2, 11, 4, 1, 1)
+        self.gridLayout.addWidget(self.HT2, 11, 5, 1, 1)
         self.HT2.clicked.connect(lambda: self.matching("HT2"))
 
         self.HT3 = QtWidgets.QPushButton(self.gridLayoutWidget)
         self.HT3.setObjectName("ht3")
-        self.gridLayout.addWidget(self.HT3, 11, 5, 1, 1)
+        self.gridLayout.addWidget(self.HT3, 11, 6, 1, 1)
         self.HT3.clicked.connect(lambda: self.matching("HT3"))
 
         self.detailEdit = QtWidgets.QLineEdit(self.centralwidget)
@@ -371,6 +376,7 @@ class Ui_MainWindow(object):
         self.CS2.setText(_translate("MainWindow", "CS2"))
         self.CS3.setText(_translate("MainWindow", "CS3"))
         self.CS4.setText(_translate("MainWindow", "CS4"))
+        self.CS5.setText(_translate("MainWindow", "CS5"))
         self.SB2.setText(_translate("MainWindow", "SB2"))
         self.HT2.setText(_translate("MainWindow", "HT2"))
         self.HT3.setText(_translate("MainWindow", "HT3"))
@@ -405,7 +411,11 @@ class Ui_MainWindow(object):
         self.editLabel.setText(_translate("MainWindow", "내용 편집"))
         self.completeEdit.setText(_translate("MainWindow", "편집 완료"))
         self.save.setText(_translate("MainWindow", "저장하기"))
-        self.versionManage.setText(_translate("MainWindow", "Verson 1.0.1")) # 매칭-딜리트-편집완료시 인덱스 바뀌는현상, 날짜 순서대로 정렬되게끔 수정
+        self.versionManage.setText(_translate("MainWindow", "Verson 1.0.2")) 
+        """
+        1.0.1 매칭-딜리트-편집완료시 인덱스 바뀌는현상, 날짜 순서대로 정렬되게끔 수정
+        1.0.2 CS5호기 버튼 추가
+        """
         self.deleting.setShortcut(_translate("MainWindow", "Del"))
 
 
@@ -418,7 +428,7 @@ class Ui_MainWindow(object):
     def get_year_month(self):
         self.year = self.yearCombo.currentText()
         self.month = self.monthCombo.currentText()
-        self.show_popup("입력 완료", "날짜 입력 완료")
+        self.show_popup("입력 완료", "연월 입력 완료")
 
     def matching(self, machineName):
 
@@ -462,11 +472,13 @@ class Ui_MainWindow(object):
         
     
     def adding_details(self):
-
-        self.idx = self.reportList.currentRow()
-        self.matched[self.machineName][-1].append(self.reversedRecords[self.idx][1])
-        self.reportList.takeItem(self.idx)
-        self.reversedRecords.pop(self.idx)
+        try:
+            self.idx = self.reportList.currentRow()
+            self.matched[self.machineName][-1].append(self.reversedRecords[self.idx][1])
+            self.reportList.takeItem(self.idx)
+            self.reversedRecords.pop(self.idx)
+        except KeyError:
+            self.show_popup("오류", "내용 추가할 설비를 선택해주세요.")
     
     
     def deleting_details(self):
