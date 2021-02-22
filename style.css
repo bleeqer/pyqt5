@@ -15,6 +15,12 @@ QPushButton {
     font-family: 'Nanum Pen Script', cursive;
 }
 
+QPushButton:hover {
+    background-color: rgba(255, 255, 255, 0.096);
+    border: 2px solid rgba(44, 44, 44, 0.733);
+}
+
+
 QListWidget {
     border-radius: 10px;
     border: 3px solid rgba(44, 44, 44, 0.733);

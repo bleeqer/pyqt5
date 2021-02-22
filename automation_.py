@@ -1,10 +1,9 @@
-import csv
 from PyQt5 import QtCore, QtGui, QtWidgets
 from openpyxl import load_workbook
 import datetime
 from PyQt5 import Qt
 import os
-from pprint import pprint
+
 
 def importing_recrods(workbook):
     wb = load_workbook(workbook)
@@ -414,9 +413,10 @@ class Ui_MainWindow(object):
         self.editLabel.setText(_translate("MainWindow", "내용 편집"))
         self.completeEdit.setText(_translate("MainWindow", "편집 완료"))
         self.save.setText(_translate("MainWindow", "저장하기"))
-        self.versionManage.setText(_translate("MainWindow", "Verson 1.0.2")) 
+        self.versionManage.setText(_translate("MainWindow", "Verson 1.0.3")) 
         # 1.0.1 매칭-딜리트-편집완료시 인덱스 바뀌는현상, 날짜 순서대로 정렬되게끔 수정
         # 1.0.2 CS5호기 버튼 추가
+        # 1.0.3 스트링으로 정렬시 사전편찬순으로 정리 되던 것 정수형으로 정렬하여 순서 맞춤
 
         self.deleting.setShortcut(_translate("MainWindow", "Del"))
 
@@ -511,9 +511,7 @@ class Ui_MainWindow(object):
         csvColumns = []
         for machine in self.matched:
             self.matched[machine].sort()
-        pprint(self.matched)
-        
-        pprint(self.matched)
+
         for workbook in self.workbookList:
             
             wb = load_workbook(workbook)
@@ -527,22 +525,22 @@ class Ui_MainWindow(object):
                 try:
                     for i in range(100):
                         if len(self.matched[machine][0]) == 2:
-                            if len(self.matched[machine][0][0]) == 1:
+                            if len(str(self.matched[machine][0][0])) == 1:
                                 self.matched[machine][0][0] = "0" + str(self.matched[machine][0][0])
 
                                 cells = self.finding_empty(ws, 'C')
                                 ws.cell(row=int(cells[0]), column=int(self.columns["C"])).value = self.matched[machine][0][1]
                                 ws.cell(row=int(cells[0]), column=int(self.columns["A"])).value = datetime.datetime.strptime(str(self.year) + str(self.month) + str(self.matched[machine][0][0]), self.dateFormat).date()
                                 del self.matched[machine][0]
-                            elif len(self.matched[machine][0][0]) == 2:
+                            elif len(str(self.matched[machine][0][0])) == 2:
 
                                 cells = self.finding_empty(ws, 'C')
                                 ws.cell(row=int(cells[0]), column=int(self.columns["C"])).value = self.matched[machine][0][1]
                                 ws.cell(row=int(cells[0]), column=int(self.columns["A"])).value = datetime.datetime.strptime(str(self.year) + str(self.month) + str(self.matched[machine][0][0]), self.dateFormat).date()
                                 del self.matched[machine][0]
 
-                        if len(self.matched[machine][0]) == 3:
-                            if len(self.matched[machine][0][0]) == 1:
+                        elif len(self.matched[machine][0]) == 3:
+                            if len(str(self.matched[machine][0][0])) == 1:
                                 cells = self.finding_empty(ws, 'C')
                                 ws.cell(row=int(cells[0]), column=int(self.columns["C"])).value = self.matched[machine][0][1]
                                 ws.cell(row=int(cells[0]), column=int(self.columns["A"])).value = datetime.datetime.strptime(str(self.year) + str(self.month) + str(self.matched[machine][0][0]), self.dateFormat).date()
@@ -550,7 +548,7 @@ class Ui_MainWindow(object):
                                 ws.cell(row=int(cells[0]), column=int(self.columns["C"])).value = self.matched[machine][0][2]
                                 del self.matched[machine][0]
                             
-                            elif len(self.matched[machine][0][0]) == 2:
+                            elif len(str(self.matched[machine][0][0])) == 2:
                                 cells = self.finding_empty(ws, 'C')
                                 ws.cell(row=int(cells[0]), column=int(self.columns["C"])).value = self.matched[machine][0][1]
                                 ws.cell(row=int(cells[0]), column=int(self.columns["A"])).value = datetime.datetime.strptime(str(self.year) + str(self.month) + str(self.matched[machine][0][0]), self.dateFormat).date()
