@@ -1,8 +1,10 @@
+import csv
 from PyQt5 import QtCore, QtGui, QtWidgets
 from openpyxl import load_workbook
 import datetime
 from PyQt5 import Qt
 import os
+from pprint import pprint
 
 def importing_recrods(workbook):
     wb = load_workbook(workbook)
@@ -26,6 +28,8 @@ def importing_recrods(workbook):
                 continue
             data = ["{}".format(sheetName), val[3:]]
             records.append(data)
+            
+    wb.close()
     
     return records
 
@@ -53,6 +57,7 @@ class Ui_MainWindow(object):
         MainWindow.setCursor(QtGui.QCursor(QtCore.Qt.ArrowCursor))
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
+
         self.gridLayoutWidget = QtWidgets.QWidget(self.centralwidget)
         self.gridLayoutWidget.setGeometry(QtCore.QRect(590, 90, 482, 471))
         self.gridLayoutWidget.setObjectName("gridLayoutWidget")
@@ -331,10 +336,9 @@ class Ui_MainWindow(object):
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
-
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
-
+        self.reportList.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
@@ -406,16 +410,14 @@ class Ui_MainWindow(object):
         self.monthCombo.setItemText(10, _translate("MainWindow", "11"))
         self.monthCombo.setItemText(11, _translate("MainWindow", "12"))
         self.yearMonth.setText(_translate("MainWindow", "연월 설정"))
-  
         self.reportLabel.setText(_translate("MainWindow", "생산기술팀 업무보고 목록"))
         self.editLabel.setText(_translate("MainWindow", "내용 편집"))
         self.completeEdit.setText(_translate("MainWindow", "편집 완료"))
         self.save.setText(_translate("MainWindow", "저장하기"))
         self.versionManage.setText(_translate("MainWindow", "Verson 1.0.2")) 
-        """
-        1.0.1 매칭-딜리트-편집완료시 인덱스 바뀌는현상, 날짜 순서대로 정렬되게끔 수정
-        1.0.2 CS5호기 버튼 추가
-        """
+        # 1.0.1 매칭-딜리트-편집완료시 인덱스 바뀌는현상, 날짜 순서대로 정렬되게끔 수정
+        # 1.0.2 CS5호기 버튼 추가
+
         self.deleting.setShortcut(_translate("MainWindow", "Del"))
 
 
@@ -435,7 +437,8 @@ class Ui_MainWindow(object):
         if int(self.year) > 0:
             self.machineName = machineName
             self.idx = self.reportList.currentRow()
-            self.detailEdit.setText(self.reversedRecords[self.idx][1])
+            test = self.reportList.currentItem().text()
+            self.detailEdit.setText(test)  # 현재 로우 내용 가져올 것 
             self.detailEdit.setFocus()
             self.detailEdit.setCursorPosition(0)
         elif int(self.year) == 0:
@@ -447,9 +450,9 @@ class Ui_MainWindow(object):
     def edited(self):  
         if self.matching_sig == True:
             if self.machineName in self.matched.keys():
-                self.matched[self.machineName].append([self.reversedRecords[self.idx][0], self.editedRec])
+                self.matched[self.machineName].append([int(self.reversedRecords[self.idx][0]), self.editedRec])
             elif not self.machineName in self.matched.keys():
-                self.matched[self.machineName] = [[self.reversedRecords[self.idx][0], self.editedRec]]
+                self.matched[self.machineName] = [[int(self.reversedRecords[self.idx][0]), self.editedRec]]
             self.reportList.takeItem(self.idx)
             self.reversedRecords.pop(self.idx)
             self.detailEdit.clear()
@@ -505,10 +508,12 @@ class Ui_MainWindow(object):
 
 
     def writing_in(self):
-
+        csvColumns = []
         for machine in self.matched:
             self.matched[machine].sort()
+        pprint(self.matched)
         
+        pprint(self.matched)
         for workbook in self.workbookList:
             
             wb = load_workbook(workbook)
@@ -564,14 +569,16 @@ class Ui_MainWindow(object):
         self.show_popup("저장 완료", "저장 완료됨")
          
 
+
+
 if __name__ == "__main__":
     import sys
     records = importing_recrods('files/개발업무.xlsx')
     app = QtWidgets.QApplication(sys.argv)
+    app.setStyleSheet(open('style.css').read())
     MainWindow = QtWidgets.QMainWindow()
     ui = Ui_MainWindow()
     ui.setupUi(MainWindow)
     ui.inserting_records(records)
     MainWindow.show()
-    sys.exit(app.exec_())
-
+    sys.exit(app.exec())
