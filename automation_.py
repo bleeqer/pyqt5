@@ -29,7 +29,6 @@ def importing_recrods(workbook):
             records.append(data)
             
     wb.close()
-    
     return records
 
 
@@ -48,6 +47,13 @@ class Ui_MainWindow(object):
         self.dateFormat = '%Y%m%d'
         self.editedRec = ''
         self.matching_sig = 0
+        self.deletedLists = []
+        self.deletedEdited = []
+        self.machineNameList = []
+        self.matchingText = ''
+        self.listOrEdit = 0
+        # self.deletedItem = QWidgets.QListWidgetItem()
+        
 
 
     def setupUi(self, MainWindow):
@@ -56,6 +62,9 @@ class Ui_MainWindow(object):
         MainWindow.setCursor(QtGui.QCursor(QtCore.Qt.ArrowCursor))
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
+        
+        self.shortcut = QtWidgets.QShortcut(QtGui.QKeySequence("Ctrl+Z"), self.centralwidget)
+        self.shortcut.activated.connect(self.rollback)
 
         self.gridLayoutWidget = QtWidgets.QWidget(self.centralwidget)
         self.gridLayoutWidget.setGeometry(QtCore.QRect(590, 90, 482, 471))
@@ -317,10 +326,17 @@ class Ui_MainWindow(object):
         self.completeEdit.setGeometry(QtCore.QRect(800, 630, 75, 21)) 
         self.completeEdit.setObjectName("completeEdit")
         self.completeEdit.clicked.connect(self.edited)
+        
         self.save = QtWidgets.QPushButton(self.centralwidget)
         self.save.setGeometry(QtCore.QRect(530, 710, 80, 23)) 
         self.save.setObjectName("wrting_in")
         self.save.clicked.connect(self.writing_in)
+        
+        # self.rollback_e = QtWidgets.QPushButton(self.centralwidget)
+        # self.rollback_e.setGeometry(QtCore.QRect(880, 630, 75, 21)) 
+        # self.rollback_e.setObjectName("rollback_E")
+        # self.rollback_e.clicked.connect(self.rollback_E)
+        
         self.versionManage = QtWidgets.QLabel(self.centralwidget)
         self.versionManage.setGeometry(QtCore.QRect(980, 790, 121, 16))
         self.versionManage.setObjectName("versionManage")
@@ -413,10 +429,12 @@ class Ui_MainWindow(object):
         self.editLabel.setText(_translate("MainWindow", "내용 편집"))
         self.completeEdit.setText(_translate("MainWindow", "편집 완료"))
         self.save.setText(_translate("MainWindow", "저장하기"))
-        self.versionManage.setText(_translate("MainWindow", "Verson 1.0.3")) 
+        # self.rollback_e.setText(_translate("MainWindow", "되돌리기"))
+        self.versionManage.setText(_translate("MainWindow", "Verson 1.1.3")) 
         # 1.0.1 매칭-딜리트-편집완료시 인덱스 바뀌는현상, 날짜 순서대로 정렬되게끔 수정
         # 1.0.2 CS5호기 버튼 추가
         # 1.0.3 스트링으로 정렬시 사전편찬순으로 정리 되던 것 정수형으로 정렬하여 순서 맞춤
+        # 1.1.3 되돌리기 기능 존ㄴ ㅏ추가 
 
         self.deleting.setShortcut(_translate("MainWindow", "Del"))
 
@@ -437,8 +455,8 @@ class Ui_MainWindow(object):
         if int(self.year) > 0:
             self.machineName = machineName
             self.idx = self.reportList.currentRow()
-            test = self.reportList.currentItem().text()
-            self.detailEdit.setText(test)  # 현재 로우 내용 가져올 것 
+            self.matchingText = self.reportList.currentItem().text()
+            self.detailEdit.setText(self.matchingText)  # 현재 로우 내용 가져올 것 
             self.detailEdit.setFocus()
             self.detailEdit.setCursorPosition(0)
         elif int(self.year) == 0:
@@ -447,17 +465,23 @@ class Ui_MainWindow(object):
         self.matching_sig = 1
 
 
-    def edited(self):  
+    def edited(self):
         if self.matching_sig == True:
             if self.machineName in self.matched.keys():
                 self.matched[self.machineName].append([int(self.reversedRecords[self.idx][0]), self.editedRec])
             elif not self.machineName in self.matched.keys():
                 self.matched[self.machineName] = [[int(self.reversedRecords[self.idx][0]), self.editedRec]]
+            self.machineNameList.append(self.machineName)
+            self.deletedEdited.append([self.machineName, self.idx, int(self.reversedRecords[self.idx][0]), self.editedRec])
             self.reportList.takeItem(self.idx)
             self.reversedRecords.pop(self.idx)
             self.detailEdit.clear()
             self.matching_sig = 0
             self.reportList.setFocus()
+            print(self.deletedEdited)
+            print(self.matched)
+            print(self.idx)
+            self.listOrEdit = 0
         elif self.matching_sig == False:
             self.show_popup('오류', '설비를 선택 해주세요.')
         
@@ -485,8 +509,75 @@ class Ui_MainWindow(object):
     
     
     def deleting_details(self):
-        self.reportList.takeItem(self.reportList.currentRow())
-        self.reversedRecords.pop(self.reportList.currentRow())
+        text = self.reportList.currentItem().text()
+        idx = self.reportList.currentRow()
+        self.deletedLists.append([str(idx), text])
+        self.reportList.takeItem(idx)
+        self.reversedRecords.pop(idx)
+        self.listOrEdit = 1
+
+
+    def rollback(self):
+        if self.listOrEdit == 0:
+            try:
+                setRow = int(self.deletedEdited[-1][-4])
+                self.reportList.insertItem(int(self.deletedEdited[-1][-4]), self.deletedEdited[-1][-2])
+                self.reportList.setCurrentRow(setRow)
+                self.detailEdit.setText(self.deletedEdited[-1][-2])
+                self.detailEdit.setFocus()
+                print(self.deletedEdited)
+                self.reversedRecords.insert(self.deletedEdited[-1][2], [self.deletedEdited[-1][-3], self.deletedEdited[-1][-2]])
+                print(self.deletedEdited)
+                self.deletedEdited.pop(-1)
+                self.detailEdit.setCursorPosition(0)
+                self.matching_sig = 1
+                del self.matched[self.machineNameList[-1]][-1]
+                self.machineName = self.machineNameList[-1]
+                self.machineNameList.pop(-1)
+            
+            except IndexError:
+                self.show_popup("오류", "되돌릴 내용이 없습니다.")
+                
+        elif self.listOrEdit == 1:
+            try:
+                setRow = int(self.deletedLists[-1][0])
+                self.reportList.insertItem(int(self.deletedLists[-1][0]), self.deletedLists[-1][1])
+                self.reversedRecords.append(self.deletedLists[-1])
+                self.deletedLists.pop(-1)
+                self.reportList.setCurrentRow(setRow)
+                
+            except IndexError:
+                self.show_popup("오류", "되돌릴 내용이 없습니다.")
+        
+    # def rollback_E(self):
+    #     try:
+    #         setRow = int(self.deletedEdited[-1][-4])
+    #         self.reportList.insertItem(int(self.deletedEdited[-1][-4]), self.deletedEdited[-1][-2])
+    #         self.reportList.setCurrentRow(setRow)
+    #         self.detailEdit.setText(self.deletedEdited[-1][-2])
+    #         self.detailEdit.setFocus()
+    #         print(self.deletedEdited)
+    #         self.reversedRecords.insert(self.deletedEdited[-1][2], [self.deletedEdited[-1][-3], self.deletedEdited[-1][-2]])
+    #         self.deletedEdited.pop(-1)
+    #         self.detailEdit.setCursorPosition(0)
+    #         self.matching_sig = 1
+    #         del self.matched[self.machineNameList[-1]][-1]
+    #         self.machineName = self.machineNameList[-1]
+    #         self.machineNameList.pop(-1)
+            
+    #     except IndexError:
+    #         self.show_popup("오류", "되돌릴 내용이 없습니다.")
+            
+    # def rollback_L(self):
+    #         try:
+    #             setRow = int(self.deletedLists[-1][0])
+    #             self.reportList.insertItem(int(self.deletedLists[-1][0]), self.deletedLists[-1][1])
+    #             self.reversedRecords.append(self.deletedLists[-1])
+    #             self.deletedLists.pop(-1)
+    #             self.reportList.setCurrentRow(setRow)
+                
+    #         except IndexError:
+    #             self.show_popup("오류", "되돌릴 내용이 없습니다.")
         
 
     def display_editing(self, old, new):
