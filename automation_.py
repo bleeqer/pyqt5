@@ -486,9 +486,8 @@ class Ui_MainWindow(object):
             self.detailEdit.clear()
             self.matching_sig = 0
             self.reportList.setFocus()
-            # print(self.deletedEdited)
+            print(self.deletedEdited)
             # print(self.matched)
-            # print(self.idx)
             self.listOrEdit = 0
         elif self.matching_sig == False:
             self.show_popup('오류', '설비를 선택 해주세요.')
@@ -519,7 +518,7 @@ class Ui_MainWindow(object):
     def deleting_details(self):
         text = self.reportList.currentItem().text()
         idx = self.reportList.currentRow()
-        self.deletedLists.append([str(idx), text])
+        self.deletedLists.append([str(idx), self.reversedRecords[idx][0], text])
         self.reportList.takeItem(idx)
         self.reversedRecords.pop(idx)
         self.listOrEdit = 1
@@ -527,11 +526,14 @@ class Ui_MainWindow(object):
 
 
     def rollback(self):
-        print('됨?')
+        
+        if not self.deletedEdited and not self.deletedLists:
+            self.show_popup("오류", "되돌릴 내용이 없습니다.")
+            
+        else:
 
-        if self.listOrEdit == 0:
+            if self.listOrEdit == 0:
 
-            try:
                 Idx = int(self.deletedEdited[-1][-4])
 
                 date = self.deletedEdited[-1][-3]
@@ -550,26 +552,29 @@ class Ui_MainWindow(object):
                 self.detailEdit.setText(uneditedDetail)
 
                 self.machineName = self.deletedEdited[-1][0]
-
+                if len(self.deletedEdited) == 1 and self.deletedLists:
+                    self.listOrEdit == 1
+                        
                 self.deletedEdited.pop(-1)
 
                 self.matching_sig = 1
 
                 self.machineNameList.pop(-1)
             
-            except IndexError:
-                self.show_popup("오류", "되돌릴 내용이 없습니다.")
+               
+                    
                 
-        elif self.listOrEdit == 1:
-            try:
-                setRow = int(self.deletedLists[-1][0])
-                self.reportList.insertItem(int(self.deletedLists[-1][0]), self.deletedLists[-1][1])
-                self.reversedRecords.append(self.deletedLists[-1])
-                self.deletedLists.pop(-1)
-                self.reportList.setCurrentRow(setRow)
-                
-            except IndexError:
-                self.show_popup("오류", "되돌릴 내용이 없습니다.")
+                    
+            if self.listOrEdit == 1:
+                    setRow = int(self.deletedLists[-1][0])
+                    self.reportList.insertItem(int(self.deletedLists[-1][0]), self.deletedLists[-1][2])
+                    self.reversedRecords.insert(int(self.deletedLists[-1][0]), [self.deletedLists[-1][1], self.deletedLists[-1][2]])
+                    if len(self.deletedLists) == 1 and self.deletedEdited:
+                        self.listOrEdit == 0
+                    self.deletedLists.pop(-1)
+                    self.reportList.setCurrentRow(setRow)
+                    
+    
         
     # def rollback_E(self):
     #     try:
