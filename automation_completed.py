@@ -455,21 +455,31 @@ class Ui_MainWindow(object):
     def matching(self, machineName):
 
         if int(self.year) > 0:
-            self.machineName = machineName
-            self.idx = self.reportList.currentRow()
-            self.matchingText = self.reportList.currentItem().text()
-            self.detailEdit.setText(self.matchingText)  # 현재 로우 내용 가져올 것 
-            self.detailEdit.setFocus()
-            self.detailEdit.setCursorPosition(0)
+            try: 
+                self.machineName = machineName
+                self.idx = self.reportList.currentRow()
+                self.matchingText = self.reportList.currentItem().text()
+                self.detailEdit.setText(self.matchingText)  
+                self.detailEdit.setFocus()
+                self.detailEdit.setCursorPosition(0)
+                self.matching_sig = 1
+            except AttributeError:
+                self.show_popup("오류", "내용을 선택 해주세요.")
+                
         elif int(self.year) == 0:
             self.show_popup("오류", "날짜를 먼저 설정 해주세요.")
             self.detailEdit.clear()
-        self.matching_sig = 1
+
 
 
     def edited(self):
         if self.matching_sig == True:
-            self.editingLabel.setText(str(self.editedRec))
+            edited = self.editedRec
+            
+
+            print(f"the edited rec is : {self.editedRec} and its type is : {type(self.editedRec)}.")
+            
+            
             date = int(self.reversedRecords[self.idx][0])
             uneditedDetail = self.reversedRecords[self.idx][1]
             
@@ -487,6 +497,9 @@ class Ui_MainWindow(object):
             self.matching_sig = 0
             self.reportList.setFocus()
             self.listOrEdit = 0
+            self.editingLabel.setText("편집됨: " + str(edited))
+            print(f"기계이름은 {self.machineName} 내용은 {edited}")
+          
             
         elif self.matching_sig == False:
             self.show_popup('오류', '설비를 선택 해주세요.')
@@ -535,7 +548,11 @@ class Ui_MainWindow(object):
                 self.reversedRecords.insert(self.deletedList[-1]['idx'], [self.deletedList[-1]['date'], self.deletedList[-1]['unedited']])
                 self.machineName = self.deletedList[-1]['machineName']
                 self.reportList.setCurrentRow(self.deletedList[-1]['idx'])
+                self.detailEdit.setText(self.deletedList[-1]['unedited'])
+                self.detailEdit.setFocus()
+                self.detailEdit.setCursorPosition(0)
                 self.deletedList.pop(-1)
+                self.matching_sig = 1
 
                 
             elif self.deletedList[-1]['signal'] == 'list':
@@ -546,87 +563,13 @@ class Ui_MainWindow(object):
         else:
             self.show_popup('오류', '되돌릴 내용이 없습니다.')
 
-            
-
-            # if self.listOrEdit == 0:
-
-            #     Idx = int(self.deletedEdited[-1][-4])
-
-            #     date = self.deletedEdited[-1][-3]
-
-            #     machineName = self.deletedEdited[-1][0]
-
-            #     uneditedDetail = self.deletedEdited[-1][-2]
-
-            #     del self.matched[machineName][-1]
-
-            #     self.reportList.insertItem(Idx, uneditedDetail)
-            #     self.reversedRecords.insert(Idx, [date, uneditedDetail])
-
-            #     self.reportList.setCurrentRow(Idx)
-
-            #     self.detailEdit.setText(uneditedDetail)
-
-            #     self.machineName = self.deletedEdited[-1][0]
-            #     if len(self.deletedEdited) == 1 and self.deletedLists:
-            #         self.listOrEdit == 1
-                        
-            #     self.deletedEdited.pop(-1)
-
-            #     self.matching_sig = 1
-
-            #     self.machineNameList.pop(-1)
-            
-               
-                    
-                
-                    
-            # if self.listOrEdit == 1:
-            #         setRow = int(self.deletedLists[-1][0])
-            #         self.reportList.insertItem(int(self.deletedLists[-1][0]), self.deletedLists[-1][2])
-            #         self.reversedRecords.insert(int(self.deletedLists[-1][0]), [self.deletedLists[-1][1], self.deletedLists[-1][2]])
-            #         if len(self.deletedLists) == 1 and self.deletedEdited:
-            #             self.listOrEdit == 0
-            #         self.deletedLists.pop(-1)
-            #         self.reportList.setCurrentRow(setRow)
-                    
-    
-        
-    # def rollback_E(self):
-    #     try:
-    #         setRow = int(self.deletedEdited[-1][-4])
-    #         self.reportList.insertItem(int(self.deletedEdited[-1][-4]), self.deletedEdited[-1][-2])
-    #         self.reportList.setCurrentRow(setRow)
-    #         self.detailEdit.setText(self.deletedEdited[-1][-2])
-    #         self.detailEdit.setFocus()
-    #         print(self.deletedEdited)
-    #         self.reversedRecords.insert(self.deletedEdited[-1][2], [self.deletedEdited[-1][-3], self.deletedEdited[-1][-2]])
-    #         self.deletedEdited.pop(-1)
-    #         self.detailEdit.setCursorPosition(0)
-    #         self.matching_sig = 1
-    #         del self.matched[self.machineNameList[-1]][-1]
-    #         self.machineName = self.machineNameList[-1]
-    #         self.machineNameList.pop(-1)
-            
-    #     except IndexError:
-    #         self.show_popup("오류", "되돌릴 내용이 없습니다.")
-            
-    # def rollback_L(self):
-    #         try:
-    #             setRow = int(self.deletedLists[-1][0])
-    #             self.reportList.insertItem(int(self.deletedLists[-1][0]), self.deletedLists[-1][1])
-    #             self.reversedRecords.append(self.deletedLists[-1])
-    #             self.deletedLists.pop(-1)
-    #             self.reportList.setCurrentRow(setRow)
-                
-    #         except IndexError:
-    #             self.show_popup("오류", "되돌릴 내용이 없습니다.")
         
 
     def display_editing(self, old, new):
         oldText = self.detailEdit.text()
         self.editingLabel.setText(oldText[new:])
         self.editedRec = oldText[new:]
+        print(self.editedRec)
      
     
 
