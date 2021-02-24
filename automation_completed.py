@@ -475,14 +475,9 @@ class Ui_MainWindow(object):
     def edited(self):
         if self.matching_sig == True:
             edited = self.editedRec
-            
-
-            print(f"the edited rec is : {self.editedRec} and its type is : {type(self.editedRec)}.")
-            
-            
             date = int(self.reversedRecords[self.idx][0])
             uneditedDetail = self.reversedRecords[self.idx][1]
-            
+
             if self.machineName in self.matched.keys():
                 self.matched[self.machineName].append([date, self.editedRec])
 
@@ -498,7 +493,6 @@ class Ui_MainWindow(object):
             self.reportList.setFocus()
             self.listOrEdit = 0
             self.editingLabel.setText("편집됨: " + str(edited))
-            print(f"기계이름은 {self.machineName} 내용은 {edited}")
           
             
         elif self.matching_sig == False:
@@ -532,7 +526,7 @@ class Ui_MainWindow(object):
         self.prevLabel.setText("삭제됨: " + str(text))
         idx = self.reportList.currentRow()
         self.deletedList.append({'idx': idx, 'date': self.reversedRecords[idx][0], 'unedited': self.reversedRecords[idx][1], 'signal': 'list'})
-        print(self.deletedList)
+
         self.reportList.takeItem(idx)
         self.reversedRecords.pop(idx)
         
@@ -569,7 +563,6 @@ class Ui_MainWindow(object):
         oldText = self.detailEdit.text()
         self.editingLabel.setText(oldText[new:])
         self.editedRec = oldText[new:]
-        print(self.editedRec)
      
     
 
