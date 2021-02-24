@@ -47,8 +47,7 @@ class Ui_MainWindow(object):
         self.dateFormat = '%Y%m%d'
         self.editedRec = ''
         self.matching_sig = 0
-        self.deletedLists = []
-        self.deletedEdited = []
+        self.deletedList = []
         self.machineNameList = []
         self.matchingText = ''
         self.listOrEdit = 3
@@ -279,9 +278,16 @@ class Ui_MainWindow(object):
         self.detailEdit.setGeometry(QtCore.QRect(300, 630, 491, 21))
         self.detailEdit.setObjectName("detailEdit")
         self.detailEdit.cursorPositionChanged.connect(self.display_editing)
+        
         self.editingLabel = QtWidgets.QLabel(self.centralwidget)
         self.editingLabel.setGeometry(QtCore.QRect(300, 650, 491, 21))
         self.editingLabel.setObjectName("editingLabel")
+        
+        self.prevLabel = QtWidgets.QLabel(self.centralwidget)
+        
+        self.prevLabel.setGeometry(QtCore.QRect(30, 546, 531, 21)) 
+        self.prevLabel.setObjectName("prevLabel")
+        
         self.detailEdit.returnPressed.connect(self.edited)
         self.yearCombo = QtWidgets.QComboBox(self.centralwidget)
         self.yearCombo.setGeometry(QtCore.QRect(600, 50, 75, 21))
@@ -331,11 +337,6 @@ class Ui_MainWindow(object):
         self.save.setGeometry(QtCore.QRect(530, 710, 80, 23)) 
         self.save.setObjectName("wrting_in")
         self.save.clicked.connect(self.writing_in)
-        
-        # self.rollback_e = QtWidgets.QPushButton(self.centralwidget)
-        # self.rollback_e.setGeometry(QtCore.QRect(880, 630, 75, 21)) 
-        # self.rollback_e.setObjectName("rollback_E")
-        # self.rollback_e.clicked.connect(self.rollback_E)
         
         self.versionManage = QtWidgets.QLabel(self.centralwidget)
         self.versionManage.setGeometry(QtCore.QRect(980, 790, 121, 16))
@@ -426,6 +427,7 @@ class Ui_MainWindow(object):
         self.monthCombo.setItemText(11, _translate("MainWindow", "12"))
         self.yearMonth.setText(_translate("MainWindow", "연월 설정"))
         self.reportLabel.setText(_translate("MainWindow", "생산기술팀 업무보고 목록"))
+        self.prevLabel.setText(_translate("MainWindow", " "))
         self.editLabel.setText(_translate("MainWindow", "내용 편집"))
         self.completeEdit.setText(_translate("MainWindow", "편집 완료"))
         self.save.setText(_translate("MainWindow", "저장하기"))
@@ -467,28 +469,25 @@ class Ui_MainWindow(object):
 
     def edited(self):
         if self.matching_sig == True:
+            self.editingLabel.setText(str(self.editedRec))
             date = int(self.reversedRecords[self.idx][0])
             uneditedDetail = self.reversedRecords[self.idx][1]
-
-            print(self.reversedRecords[self.idx][1])
-            print(self.editedRec)
-
+            
             if self.machineName in self.matched.keys():
                 self.matched[self.machineName].append([date, self.editedRec])
 
             elif not self.machineName in self.matched.keys():
                 self.matched[self.machineName] = [[date, self.editedRec]]
-
+            
             self.machineNameList.append(self.machineName)
-            self.deletedEdited.append([self.machineName, self.idx, date, uneditedDetail, self.editedRec])
+            self.deletedList.append({'machineName': self.machineName, 'idx': self.idx, 'date': self.reversedRecords[self.idx][0], 'unedited': self.reversedRecords[self.idx][1], 'edited': self.editedRec, 'signal': 'edit'})
             self.reportList.takeItem(self.idx)
             self.reversedRecords.pop(self.idx)
             self.detailEdit.clear()
             self.matching_sig = 0
             self.reportList.setFocus()
-            print(self.deletedEdited)
-            # print(self.matched)
             self.listOrEdit = 0
+            
         elif self.matching_sig == False:
             self.show_popup('오류', '설비를 선택 해주세요.')
         
@@ -517,63 +516,79 @@ class Ui_MainWindow(object):
     
     def deleting_details(self):
         text = self.reportList.currentItem().text()
+        self.prevLabel.setText("삭제됨: " + str(text))
         idx = self.reportList.currentRow()
-        self.deletedLists.append([str(idx), self.reversedRecords[idx][0], text])
+        self.deletedList.append({'idx': idx, 'date': self.reversedRecords[idx][0], 'unedited': self.reversedRecords[idx][1], 'signal': 'list'})
+        print(self.deletedList)
         self.reportList.takeItem(idx)
         self.reversedRecords.pop(idx)
-        self.listOrEdit = 1
+        
 
 
 
     def rollback(self):
         
-        if not self.deletedEdited and not self.deletedLists:
-            self.show_popup("오류", "되돌릴 내용이 없습니다.")
-            self.listOrEdit == 3
-            
+        if len(self.deletedList) > 0:
+        
+            if self.deletedList[-1]['signal'] == 'edit':
+                self.reportList.insertItem(self.deletedList[-1]['idx'], self.deletedList[-1]['unedited'])
+                self.reversedRecords.insert(self.deletedList[-1]['idx'], [self.deletedList[-1]['date'], self.deletedList[-1]['unedited']])
+                self.machineName = self.deletedList[-1]['machineName']
+                self.reportList.setCurrentRow(self.deletedList[-1]['idx'])
+                self.deletedList.pop(-1)
+
+                
+            elif self.deletedList[-1]['signal'] == 'list':
+                self.reportList.insertItem(self.deletedList[-1]['idx'], self.deletedList[-1]['unedited'])
+                self.reversedRecords.insert(self.deletedList[-1]['idx'], [self.deletedList[-1]['date'], self.deletedList[-1]['unedited']])
+                self.reportList.setCurrentRow(self.deletedList[-1]['idx'])
+                self.deletedList.pop(-1)
         else:
+            self.show_popup('오류', '되돌릴 내용이 없습니다.')
 
-            if self.listOrEdit == 0:
+            
 
-                Idx = int(self.deletedEdited[-1][-4])
+            # if self.listOrEdit == 0:
 
-                date = self.deletedEdited[-1][-3]
+            #     Idx = int(self.deletedEdited[-1][-4])
 
-                machineName = self.deletedEdited[-1][0]
+            #     date = self.deletedEdited[-1][-3]
 
-                uneditedDetail = self.deletedEdited[-1][-2]
+            #     machineName = self.deletedEdited[-1][0]
 
-                del self.matched[machineName][-1]
+            #     uneditedDetail = self.deletedEdited[-1][-2]
 
-                self.reportList.insertItem(Idx, uneditedDetail)
-                self.reversedRecords.insert(Idx, [date, uneditedDetail])
+            #     del self.matched[machineName][-1]
 
-                self.reportList.setCurrentRow(Idx)
+            #     self.reportList.insertItem(Idx, uneditedDetail)
+            #     self.reversedRecords.insert(Idx, [date, uneditedDetail])
 
-                self.detailEdit.setText(uneditedDetail)
+            #     self.reportList.setCurrentRow(Idx)
 
-                self.machineName = self.deletedEdited[-1][0]
-                if len(self.deletedEdited) == 1 and self.deletedLists:
-                    self.listOrEdit == 1
+            #     self.detailEdit.setText(uneditedDetail)
+
+            #     self.machineName = self.deletedEdited[-1][0]
+            #     if len(self.deletedEdited) == 1 and self.deletedLists:
+            #         self.listOrEdit == 1
                         
-                self.deletedEdited.pop(-1)
+            #     self.deletedEdited.pop(-1)
 
-                self.matching_sig = 1
+            #     self.matching_sig = 1
 
-                self.machineNameList.pop(-1)
+            #     self.machineNameList.pop(-1)
             
                
                     
                 
                     
-            if self.listOrEdit == 1:
-                    setRow = int(self.deletedLists[-1][0])
-                    self.reportList.insertItem(int(self.deletedLists[-1][0]), self.deletedLists[-1][2])
-                    self.reversedRecords.insert(int(self.deletedLists[-1][0]), [self.deletedLists[-1][1], self.deletedLists[-1][2]])
-                    if len(self.deletedLists) == 1 and self.deletedEdited:
-                        self.listOrEdit == 0
-                    self.deletedLists.pop(-1)
-                    self.reportList.setCurrentRow(setRow)
+            # if self.listOrEdit == 1:
+            #         setRow = int(self.deletedLists[-1][0])
+            #         self.reportList.insertItem(int(self.deletedLists[-1][0]), self.deletedLists[-1][2])
+            #         self.reversedRecords.insert(int(self.deletedLists[-1][0]), [self.deletedLists[-1][1], self.deletedLists[-1][2]])
+            #         if len(self.deletedLists) == 1 and self.deletedEdited:
+            #             self.listOrEdit == 0
+            #         self.deletedLists.pop(-1)
+            #         self.reportList.setCurrentRow(setRow)
                     
     
         
@@ -612,6 +627,7 @@ class Ui_MainWindow(object):
         oldText = self.detailEdit.text()
         self.editingLabel.setText(oldText[new:])
         self.editedRec = oldText[new:]
+     
     
 
 
